@@ -1,0 +1,20 @@
+body {
+    background-color: forestgreen;
+}
+
+.card {
+    font-size: 10em;
+}
+
+.hearts, .diamonds {
+    color: red;
+}
+
+div#player-container {
+    width: 100%
+}
+
+div#player-container section.player {
+    float: left;
+    width: 25%;
+}
