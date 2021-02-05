@@ -70,6 +70,7 @@ function createDeck() {
 
     suits.forEach(function (suit) {
         for (let i = 1; i <= CARDS_IN_SUIT; i++) {
+            let points = i;
             let code = suit.code+i;
             /** @description In italian & spanish decks there is a knight card, this card normally appears between jack and queen.
              * We don't need it for Poker, so we are going to skip it by increasing the Unicode by 1 starting from the queen.
@@ -86,19 +87,23 @@ function createDeck() {
             switch(value) {
                 case 14:
                     name = 'Ace';
+                    points = 11;
                     break;
                 case 13:
                     name = 'King';
+                    points = 10;
                     break;
                 case 12:
                     name = 'Queen';
+                    points = 10;
                     break;
                 case 11:
                     name = 'Jack';
+                    points = 10;
                     break;
             }
 
-            deck.push({'suit': suit.name, 'value': value, 'fullName': name + " of "+ suit.name, 'code': '&#'+ code +';'});
+            deck.push({'suit': suit.name, 'value': value, 'points': points, 'fullName': name + " of "+ suit.name, 'code': '&#'+ code +';'});
         }
     });
 
@@ -120,45 +125,9 @@ function renderCard(card) {
 // Bank deals 2 cards when Play is clicked
 document.querySelector("#play").addEventListener("click", newGame);
 
-// The function for a new card, and the calculation
-function newCard() {
-    let new_card = confirm("You have " + total + " in total.\n" +
-        "The pc has " + pcTotal + ".\n" +
-        "Do you want another card?");
-    if (new_card === true) {
-        pcNewCard();
-        let card = deck.pop();
-        document.getElementById("player_cards").innerHTML += renderCard(card);
-        playerCards.push(card);
-        console.log(playerCards);
-        playerCardsValues.push(card.value);
-        console.log(playerCardsValues);
-
-        cardsTotal();
-        console.log(total);
-
-        checkBusted();
-    } else if (pcTotal < 15) {
-        pcNewCard();
-    } else {
-        cardsTotal();
-        pcCardsTotal();
-        checkWinner();
-    }
-}
-
 // start a new game if player wants to after being busted
 function newGame() {
-    document.getElementById("common_cards").innerHTML = "";
-    document.getElementById("player_cards").innerHTML = "";
-    document.getElementById("pc_cards").innerHTML = "";
-    playerCards = [];
-    pcCards = [];
-    deck = [];
-    playerCardsValues = [];
-    pcCardsValues = [];
-    total = 0;
-    pcTotal = 0;
+    clear();
 
     createDeck();
     console.log(deck);
@@ -171,12 +140,12 @@ function newGame() {
     }
 
     playerCards.forEach(card => {
-        playerCardsValues.push(card.value);
+        playerCardsValues.push(card.points);
         console.log(playerCardsValues);
     })
 
     pcCards.forEach(card => {
-        pcCardsValues.push(card.value);
+        pcCardsValues.push(card.points);
         console.log(pcCardsValues);
     })
 
@@ -188,6 +157,34 @@ function newGame() {
     checkBusted();
 }
 
+// The function for a new card, and the calculation
+function newCard() {
+    let new_card = confirm("You have " + total + " in total.\n" +
+        "The pc has " + pcTotal + ".\n" +
+        "Do you want another card?");
+    if (new_card === true) {
+        let card = deck.pop();
+        document.getElementById("player_cards").innerHTML += renderCard(card);
+        playerCards.push(card);
+        console.log(playerCards);
+        playerCardsValues.push(card.points);
+        console.log(playerCardsValues);
+
+        cardsTotal();
+        console.log(total);
+
+        pcNewCard();
+
+        checkBusted();
+    } else if (pcTotal < 15) {
+        pcNewCard();
+    } else {
+        cardsTotal();
+        pcCardsTotal();
+        checkWinner();
+    }
+}
+
 function checkBusted() {
     if (total > 21 && pcTotal > 21) {
         let busted = confirm("BUSTED!!! Player total is " + total + ".\n" +
@@ -197,6 +194,7 @@ function checkBusted() {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
+            clear();
         }
     } else if (total > 21) {
         let busted = confirm("Player BUSTED!!! PC wins with a score of " + pcTotal + "!!!" +
@@ -205,6 +203,7 @@ function checkBusted() {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
+            clear();
         }
     } else if (pcTotal > 21) {
         let busted = confirm("PC BUSTED!!! Player wins with a score of " + total + "!!!" +
@@ -213,6 +212,7 @@ function checkBusted() {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
+            clear();
         }
     } else {
         newCard();
@@ -225,7 +225,7 @@ function pcNewCard() {
         document.getElementById("pc_cards").innerHTML += renderCard(card);
         pcCards.push(card);
         console.log(pcCards);
-        pcCardsValues.push(card.value);
+        pcCardsValues.push(card.points);
         console.log(pcCardsValues);
 
         pcCardsTotal();
@@ -251,5 +251,19 @@ function checkWinner() {
         newGame();
     } else {
         alert("Thank you for playing!  Come back soon!");
+        clear();
     }
+}
+
+function clear() {
+    document.getElementById("common_cards").innerHTML = "";
+    document.getElementById("player_cards").innerHTML = "";
+    document.getElementById("pc_cards").innerHTML = "";
+    playerCards = [];
+    pcCards = [];
+    deck = [];
+    playerCardsValues = [];
+    pcCardsValues = [];
+    total = 0;
+    pcTotal = 0;
 }
