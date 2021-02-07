@@ -19,25 +19,8 @@ let total = 0;
 // create a variable to store the total value of the pc's cards
 let pcTotal = 0;
 
-// function to calculate the total of the player's cards
-function cardsTotal() {
-    total = playerCardsValues.reduce(playerCardsTotal);
-
-    function playerCardsTotal(sum, card) {
-        return sum + card;
-    }
-    return total;
-}
-
-// function to calculate the total of the pc's cards
-function pcCardsTotal() {
-    pcTotal = pcCardsValues.reduce(pcPlayerCardsTotal);
-
-    function pcPlayerCardsTotal(sum, card) {
-        return sum + card;
-    }
-    return pcTotal;
-}
+// variable to count the current Round
+let round = 0;
 
 // create a function to make the card deck
 function createDeck() {
@@ -51,7 +34,7 @@ function createDeck() {
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
             let j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];//did you know you can assign multple variables in 1 line? Don't overuse this!
+            [array[i], array[j]] = [array[j], array[i]];//did you know you can assign multiple variables in 1 line? Don't overuse this!
         }
         return array;
     }
@@ -122,12 +105,34 @@ function renderCard(card) {
     return '<span class="card '+ card.suit +'">'+ card.code +'</span>';
 }
 
+// function to calculate the total of the player's cards
+function cardsTotal() {
+    total = playerCardsValues.reduce(playerCardsTotal);
+
+    function playerCardsTotal(sum, card) {
+        return sum + card;
+    }
+    return total;
+}
+
+// function to calculate the total of the pc's cards
+function pcCardsTotal() {
+    pcTotal = pcCardsValues.reduce(pcPlayerCardsTotal);
+
+    function pcPlayerCardsTotal(sum, card) {
+        return sum + card;
+    }
+    return pcTotal;
+}
+
 // Bank deals 2 cards when Play is clicked
 document.querySelector("#play").addEventListener("click", newGame);
 
 // start a new game if player wants to after being busted
 function newGame() {
     clear();
+
+    newRound();
 
     createDeck();
     console.log(deck);
@@ -178,44 +183,11 @@ function newCard() {
         checkBusted();
     } else if (pcTotal < 15) {
         pcNewCard();
+        checkWinner();
     } else {
         cardsTotal();
         pcCardsTotal();
         checkWinner();
-    }
-}
-
-function checkBusted() {
-    if (total > 21 && pcTotal > 21) {
-        let busted = confirm("BUSTED!!! Player total is " + total + ".\n" +
-            "PC total is " + pcTotal + ".\n" +
-            "Do you want to play again?");
-        if (busted === true) {
-            newGame();
-        } else {
-            alert("Thank you for playing!  Come back soon!");
-            clear();
-        }
-    } else if (total > 21) {
-        let busted = confirm("Player BUSTED!!! PC wins with a score of " + pcTotal + "!!!" +
-            "\nDo you want to play again?");
-        if (busted === true) {
-            newGame();
-        } else {
-            alert("Thank you for playing!  Come back soon!");
-            clear();
-        }
-    } else if (pcTotal > 21) {
-        let busted = confirm("PC BUSTED!!! Player wins with a score of " + total + "!!!" +
-            "\nDo you want to play again?");
-        if (busted === true) {
-            newGame();
-        } else {
-            alert("Thank you for playing!  Come back soon!");
-            clear();
-        }
-    } else {
-        newCard();
     }
 }
 
@@ -231,7 +203,47 @@ function pcNewCard() {
         pcCardsTotal();
         console.log(pcTotal);
 
-        checkBusted();
+        //checkBusted();
+    }
+}
+
+function checkBusted() {
+    if (total > 21 && pcTotal > 21) {
+        let busted = confirm("BUSTED!!! Player total is " + total + ".\n" +
+            "PC total is " + pcTotal + ".\n" +
+            "Do you want to play again?");
+        if (busted === true) {
+            newGame();
+        } else {
+            alert("Thank you for playing!  Come back soon!");
+            round = 0;
+            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            clear();
+        }
+    } else if (total > 21) {
+        let busted = confirm("Player BUSTED!!! PC wins with a score of " + pcTotal + "!!!" +
+            "\nDo you want to play again?");
+        if (busted === true) {
+            newGame();
+        } else {
+            alert("Thank you for playing!  Come back soon!");
+            round = 0;
+            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            clear();
+        }
+    } else if (pcTotal > 21) {
+        let busted = confirm("PC BUSTED!!! Player wins with a score of " + total + "!!!" +
+            "\nDo you want to play again?");
+        if (busted === true) {
+            newGame();
+        } else {
+            alert("Thank you for playing!  Come back soon!");
+            round = 0;
+            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            clear();
+        }
+    } else {
+        newCard();
     }
 }
 
@@ -240,18 +252,36 @@ function checkWinner() {
     if (total > pcTotal) {
         replay = confirm("Player wins with a score of " + total + "!!! PC score is " + pcTotal +
             "\nDo you want to play again?");
+        if (replay === true) {
+            newGame();
+        } else {
+            alert("Thank you for playing!  Come back soon!");
+            round = 0;
+            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            clear();
+        }
     } else if (pcTotal > total) {
         replay = confirm("PC wins with a score of " + pcTotal + "!!! Player score is " + total +
             "\nDo you want to play again?");
+        if (replay === true) {
+            newGame();
+        } else {
+            alert("Thank you for playing!  Come back soon!");
+            round = 0;
+            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            clear();
+        }
     } else {
         replay = confirm("NO WINNER!!! Player and pc both have a score of " + total + "!!!" +
             "\nDo you want to play again?");
-    }
-    if (replay === true) {
-        newGame();
-    } else {
-        alert("Thank you for playing!  Come back soon!");
-        clear();
+        if (replay === true) {
+            newGame();
+        } else {
+            alert("Thank you for playing!  Come back soon!");
+            round = 0;
+            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            clear();
+        }
     }
 }
 
@@ -266,4 +296,10 @@ function clear() {
     pcCardsValues = [];
     total = 0;
     pcTotal = 0;
+}
+
+function newRound() {
+    round++;
+    console.log(round);
+    document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
 }
