@@ -22,6 +22,16 @@ let pcTotal = 0;
 // variable to count the current Round
 let round = 0;
 
+// create variables to count the number of player and pc wins
+let playerWins = 0;
+let pcWins = 0;
+
+// create the gambling variables
+let bankChips = 0;
+let playerChips = 50;
+let pcChips = 50;
+let playerBet = 0;
+
 // create a function to make the card deck
 function createDeck() {
     const CARDS_IN_SUIT = 13;
@@ -130,36 +140,60 @@ document.querySelector("#play").addEventListener("click", newGame);
 
 // start a new game if player wants to after being busted
 function newGame() {
-    clear();
+    if (playerChips > 0) {
+        clear();
 
-    newRound();
+        newRound();
 
-    createDeck();
-    console.log(deck);
+        createDeck();
+        console.log(deck);
 
-    for (let i = 0; i < 2; i++) {
-        let card = deck.pop();
-        playerCards.push(card);
-        pcCards.push(card);
-        document.getElementById("common_cards").innerHTML += renderCard(card);
+        placeBet();
+
+        for (let i = 0; i < 2; i++) {
+            let card = deck.pop();
+            playerCards.push(card);
+            pcCards.push(card);
+            document.getElementById("common_cards").innerHTML += renderCard(card);
+        }
+
+        playerCards.forEach(card => {
+            playerCardsValues.push(card.points);
+            console.log(playerCardsValues);
+        })
+
+        pcCards.forEach(card => {
+            pcCardsValues.push(card.points);
+            console.log(pcCardsValues);
+        })
+
+        cardsTotal();
+        console.log(total);
+        pcCardsTotal();
+        console.log(pcTotal);
+
+        checkBusted();
+    } else {
+        alert("No more chips!  Please start a new game!");
     }
+}
 
-    playerCards.forEach(card => {
-        playerCardsValues.push(card.points);
-        console.log(playerCardsValues);
-    })
-
-    pcCards.forEach(card => {
-        pcCardsValues.push(card.points);
-        console.log(pcCardsValues);
-    })
-
-    cardsTotal();
-    console.log(total);
-    pcCardsTotal();
-    console.log(pcTotal);
-
-    checkBusted();
+function placeBet() {
+    playerBet = Number(prompt("How many chips do you want to bet?"));
+    if (0 < playerBet < playerChips) {  
+        document.querySelector(".player_bet").innerHTML = `Bet: ${playerBet}`;
+        playerChips -= playerBet;
+        document.querySelector(".player_chips").innerHTML = `Player: ${playerChips} chips`;
+    } else if (playerBet >= playerChips) {
+        alert("Your bet has to be smaller than  " + playerChips + " chips!");
+        placeBet();
+    } else if (playerBet < 0) {
+        alert("You cannot place a negative bet!");
+        placeBet();
+    } else {
+        alert("You have to bet at least 1 chip!");
+        placeBet();
+    }
 }
 
 // The function for a new card, and the calculation
@@ -181,7 +215,7 @@ function newCard() {
         pcNewCard();
 
         checkBusted();
-    } else if (pcTotal < 15) {
+    } else if (pcTotal < 15) {   // LOOK FOR SOLUTION TO LET PC CONTINUE WHILE pcTotal < 15
         pcNewCard();
         checkWinner();
     } else {
@@ -209,37 +243,44 @@ function pcNewCard() {
 
 function checkBusted() {
     if (total > 21 && pcTotal > 21) {
-        let busted = confirm("BUSTED!!! Player total is " + total + ".\n" +
-            "PC total is " + pcTotal + ".\n" +
+        bankChips += playerBet;
+        document.querySelector(".bank_chips").innerHTML = `Bank: ${playerBet} chips`;
+        let busted = confirm("BUSTED!!! The bank takes all your money! \n" +
+            "Player total is " + total + ". PC total is " + pcTotal + ".\n" +
             "Do you want to play again?");
         if (busted === true) {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
-            round = 0;
-            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            reset();
             clear();
         }
     } else if (total > 21) {
+        pcWins++;
+        document.querySelector(".pc_wins").innerHTML = `PC wins: ${pcWins}`;
+        pcChips += playerBet;
+        document.querySelector(".pc_chips").innerHTML = `PC: ${pcChips} chips`;
         let busted = confirm("Player BUSTED!!! PC wins with a score of " + pcTotal + "!!!" +
             "\nDo you want to play again?");
         if (busted === true) {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
-            round = 0;
-            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            reset();
             clear();
         }
     } else if (pcTotal > 21) {
+        playerWins++;
+        document.querySelector(".player_wins").innerHTML = `Player wins: ${playerWins}`;
+        playerChips += playerBet * 2;
+        document.querySelector(".player_chips").innerHTML = `Player: ${playerChips} chips`;
         let busted = confirm("PC BUSTED!!! Player wins with a score of " + total + "!!!" +
             "\nDo you want to play again?");
         if (busted === true) {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
-            round = 0;
-            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            reset();
             clear();
         }
     } else {
@@ -249,39 +290,48 @@ function checkBusted() {
 
 function checkWinner() {
     let replay;
-    if (total > pcTotal) {
+    if (total > pcTotal && total < 22) {
+        playerWins++;
+        document.querySelector(".player_wins").innerHTML = `Player wins: ${playerWins}`;
+        playerChips += playerBet * 2;
+        document.querySelector(".player_chips").innerHTML = `Player: ${playerChips} chips`;
         replay = confirm("Player wins with a score of " + total + "!!! PC score is " + pcTotal +
             "\nDo you want to play again?");
         if (replay === true) {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
-            round = 0;
-            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            reset();
             clear();
         }
-    } else if (pcTotal > total) {
+    } else if (pcTotal > total && pcTotal < 22) {
+        pcWins++;
+        document.querySelector(".pc_wins").innerHTML = `PC wins: ${pcWins}`;
+        pcChips += playerBet;
+        document.querySelector(".pc_chips").innerHTML = `PC: ${pcChips} chips`;
         replay = confirm("PC wins with a score of " + pcTotal + "!!! Player score is " + total +
             "\nDo you want to play again?");
         if (replay === true) {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
-            round = 0;
-            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            reset();
             clear();
         }
-    } else {
+    } else if (total === pcTotal && total < 22) {
+        playerChips += playerBet;
+        document.querySelector(".player_chips").innerHTML = `Player: ${playerChips} chips`;
         replay = confirm("NO WINNER!!! Player and pc both have a score of " + total + "!!!" +
             "\nDo you want to play again?");
         if (replay === true) {
             newGame();
         } else {
             alert("Thank you for playing!  Come back soon!");
-            round = 0;
-            document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+            reset();
             clear();
         }
+    } else {
+        checkBusted();
     }
 }
 
@@ -296,10 +346,29 @@ function clear() {
     pcCardsValues = [];
     total = 0;
     pcTotal = 0;
+    playerBet = 0;
+    document.querySelector(".player_bet").innerHTML = `Bet: ${playerBet}`;
 }
 
 function newRound() {
     round++;
     console.log(round);
     document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+}
+
+function reset() {
+    round = 0;
+    playerWins = 0;
+    pcWins = 0;
+    bankChips = 0;
+    playerChips = 50;
+    pcChips = 50;
+    playerBet = 0;
+    document.querySelector(".round_counter").innerHTML = `Round: ${round}`;
+    document.querySelector(".player_wins").innerHTML = `Player wins: ${playerWins}`;
+    document.querySelector(".pc_wins").innerHTML = `PC wins: ${pcWins}`;
+    document.querySelector(".player_bet").innerHTML = `Bet: ${playerBet}`;
+    document.querySelector(".player_chips").innerHTML = `Player: ${playerChips} chips`;
+    document.querySelector(".pc_chips").innerHTML = `PC: ${pcChips} chips`;
+    document.querySelector(".bank_chips").innerHTML = `Bank: ${bankChips} chips`;
 }

@@ -11,6 +11,11 @@ h1 {
     text-align: center;
 }
 
+button {
+    padding: 5px;
+    font-size: 20px;
+}
+
 .card {
     font-size: 10em;
 }
@@ -25,5 +30,14 @@ div#player-container {
 
 div#player-container section.player {
     float: left;
-    width: 25%;
+    width: 30%;
+}
+
+table, th, td {
+    width: 30%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: bold;
 }
